@@ -1,5 +1,5 @@
 class UndoStack:
-    def init(self):
+    def __init__(self):
         self.stack = []
 
     def push(self, action):
