@@ -1,4 +1,4 @@
-# === data_structures/queue_tasks.py (DAVIS)===
+# === Queue_tasks.py (DAVIS)===
 from collections import deque
 
 class TaskQueue:

@@ -24,7 +24,11 @@ def refresh_tasks():
     task_id_map = []  # Reset the map
 
     for i, task in enumerate(tasks, start=1):
-        task_listbox.insert(tk.END, f"{i}. {task['description']} [{task['status']}]")
+        status_icon="✔️done" if task['status']== 'done' else "Pending"
+        display_text= f"{i}. {task['description']}" 
+        if status_icon:
+            display_text +=f" [{status_icon}]"
+        task_listbox.insert(tk.END, display_text)
         task_id_map.append(task['id'])  # Store the real ID
 
 
@@ -40,8 +44,9 @@ def delete_selected():
     try:
         index = task_listbox.curselection()[0]
         task_id = task_id_map[index]
+        task= next(t for t in task_db.get_tasks() if t['id']== task_id)
+        undo.push({"action":"delete","id": task_id, "desc": task['description'], "status": task['status']})
         task_db.delete_task(task_id)
-        undo.push({"action":"delete","id": task_id})
         refresh_tasks()
     except:
         messagebox.showerror("Error", "Please select a task to delete.")
@@ -79,14 +84,21 @@ def undo_last():
             if t['description']== action["desc"]:
                 task_db.delete_task(t['id'])
                 break
-            elif action["action"]== "delete":
-                task_db.add_task("[Restored]"+ str(action["id"]))
-            refresh_tasks()
+    elif action["action"]== "delete":
+        task_db.add_task(action["desc"])
+        if action.get("status")== "done":
+                tasks = task_db.get_tasks()
+                for t in tasks:
+                    if t['description']== action ["desc"]:
+                        task_db.toggle_status(t['id'])
+                        break
+    refresh_tasks()
 
-# 🖼 App Window Setup
+
+# App Window Setup
 app = tk.Tk()
 app.title(" Darasa Todo")
-app.geometry("600x600")
+app.geometry("500x500")
 app.configure(bg=BG_COLOR)
 
 #Load and resize image
@@ -100,7 +112,7 @@ logo_label = tk.Label(app, image=logo_img, bg=BG_COLOR)
 logo_label.pack(pady=(15,5))
 
 # Title
-title_label = tk.Label(app, text=" Darasa To-Do List", font=("Segoe UI", 14, "bold"), bg=BG_COLOR, fg=TEXT_COLOR)
+title_label = tk.Label(app, text=" DARASA To-Do List", font=("Segoe UI", 14, "bold"), bg=BG_COLOR, fg=TEXT_COLOR)
 title_label.pack(pady=10)
 
 # Entry Box
@@ -131,7 +143,7 @@ def styled_btn(text, command):
 styled_btn("Add", add_task).pack(side=tk.LEFT, padx=4)
 styled_btn("Delete", delete_selected).pack(side=tk.LEFT, padx=4)
 styled_btn("Edit", edit_selected).pack(side=tk.LEFT, padx=4)
-styled_btn("Toggle", toggle_status).pack(side=tk.LEFT, padx=4)
+styled_btn("Check Off", toggle_status).pack(side=tk.LEFT, padx=4)
 styled_btn("Undo", undo_last).pack(side=tk.LEFT, padx=4)
 
 # Task List
