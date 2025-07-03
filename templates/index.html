@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>DARASA To-do</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#1e1e2f] text-white font-sans p-4 text-sm">
+  
+
+  <div class="flex items-center space-x-3 mb-2">
+    <img src="{{ url_for('static', filename='logo_white.png') }}" alt="Darasa Logo" class="w-10 h-10">
+    <h1 class="text-xl font-bold text-[#2dd4bf]">Darasa To-do List</h1>
+  </div>
+
+
+  <form action="/add" method="POST" class="flex gap-2 mb-3">
+    <input type="text" name="description" placeholder="New Task" required
+           class="flex-1 px-2 py-1 bg-[#2c2c3a] text-white border border-[#2dd4bf] rounded focus:outline-none focus:ring-2 focus:ring-[#2dd4bf]">
+    <button type="submit" class="bg-[#2dd4bf] text-black px-3 py-1 rounded hover:bg-[#22c1b4] transition">Add</button>
+  </form>
+
+
+  <ul class="space-y-2">
+    {% for task in tasks %}
+    <li class="flex items-center justify-between bg-[#2a2a36] px-3 py-2 rounded">
+      
+    
+      <form action="/toggle/{{task.id}}" method="GET" class="flex items-center space-x-2">
+        <input type="checkbox" onchange="this.form.submit()" {% if task.status == 'done' %}checked{% endif %}
+               class="form-checkbox accent-[#2dd4bf] w-4 h-4">
+        <span class="{% if task.status == 'done' %}line-through text-gray-400{% endif %}">{{ task.description }}</span>
+      </form>
+
+    
+      <div class="flex items-center space-x-2">
+        <form action="/edit/{{task.id}}" method="POST" class="flex space-x-1">
+          <input type="text" name="new_desc" value="{{ task.description }}"
+                 class="bg-[#1e1e2f] text-white border border-[#2dd4bf] rounded px-2 py-1 w-36">
+          <button type="submit" class="text-xs bg-[#2dd4bf] text-black px-2 py-1 rounded hover:bg-[#22c1b4]">Update</button>
+        </form>
+        <a href="/delete/{{task.id}}" class="text-xs text-red-400 hover:text-red-300">Delete</a>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+
+</body>
+</html>
