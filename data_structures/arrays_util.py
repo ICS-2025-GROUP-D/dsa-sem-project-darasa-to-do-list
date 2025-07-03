@@ -1,4 +1,4 @@
-# === data_structures/array_utils.py (Jakes) ===
+# === array_utils.py (Jakes) ===
 def sort_tasks(task_list):
     return sorted(task_list, key=lambda x: x['description'])
 
