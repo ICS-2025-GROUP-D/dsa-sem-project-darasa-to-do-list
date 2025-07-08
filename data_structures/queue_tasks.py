@@ -2,7 +2,7 @@
 from collections import deque
 
 class TaskQueue:
-    def _init_(self):
+    def __init__(self):
         self.queue = deque()
 
     def enqueue(self, task):

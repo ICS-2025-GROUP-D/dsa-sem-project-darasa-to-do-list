@@ -21,7 +21,7 @@ def refresh_tasks():
     tasks = arrays_util.sort_tasks(task_db.get_tasks())
 
     global task_id_map
-    task_id_map = []  # Reset the map
+    task_id_map = [] 
 
     for i, task in enumerate(tasks, start=1):
         status_icon="✔️done" if task['status']== 'done' else "Pending"
@@ -29,7 +29,28 @@ def refresh_tasks():
         if status_icon:
             display_text +=f" [{status_icon}]"
         task_listbox.insert(tk.END, display_text)
-        task_id_map.append(task['id'])  # Store the real ID
+        task_id_map.append(task['id'])  
+
+def search_tasks():
+    keyword = search_entry.get().strip().lower()
+    tasks = task_db.get_tasks()
+
+    matched_tasks = [task for task in tasks if keyword in task['description'].lower()]
+
+    task_listbox.delete(0, tk.END)
+    global task_id_map
+    task_id_map = []
+
+    for i, task in enumerate(matched_tasks, start=1):
+        status_icon = "✔️done" if task['status'] == 'done' else "Pending"
+        display_text = f"{i}. {task['description']} [{status_icon}]"
+        task_listbox.insert(tk.END, display_text)
+        task_id_map.append(task['id'])
+
+
+def clear_search():
+    search_entry.delete(0, tk.END)
+    refresh_tasks()
 
 
 def add_task():
@@ -98,12 +119,12 @@ def undo_last():
 # App Window Setup
 app = tk.Tk()
 app.title(" Darasa Todo")
-app.geometry("500x500")
+app.geometry("500x750")
 app.configure(bg=BG_COLOR)
 
 #Load and resize image
 img_raw = Image.open("logo_white.png")
-img_raw = img_raw.resize((80, 80))  # Change size as needed
+img_raw = img_raw.resize((80, 80))  
 logo_img = ImageTk.PhotoImage(img_raw)
 
 
@@ -112,13 +133,16 @@ logo_label = tk.Label(app, image=logo_img, bg=BG_COLOR)
 logo_label.pack(pady=(15,5))
 
 # Title
-title_label = tk.Label(app, text=" DARASA To-Do List", font=("Segoe UI", 14, "bold"), bg=BG_COLOR, fg=TEXT_COLOR)
+title_label = tk.Label(app, text=" DARASA To-Do", font=("Segoe UI", 16, "bold"), bg=BG_COLOR, fg=TEXT_COLOR)
 title_label.pack(pady=10)
+
+sub_title_label = tk.Label(app, text="Hey! Lets plan for today", font=("Sans-serif", 11), bg=BG_COLOR, fg=TEXT_COLOR)
+sub_title_label.pack(pady=10)
+
 
 # Entry Box
 entry = tk.Entry(app, width=38, font=FONT, bg=ENTRY_BG, fg=TEXT_COLOR, insertbackground=TEXT_COLOR, relief=tk.FLAT)
 entry.pack(pady=5)
-
 
 # Buttons
 btn_frame = tk.Frame(app, bg=BG_COLOR)
@@ -160,6 +184,21 @@ task_listbox = tk.Listbox(
 )
 
 task_listbox.pack(pady=10)
+
+#Search
+search_frame = tk.Frame(app, bg=BG_COLOR)
+search_frame.pack(pady=(10, 5))
+
+search_entry = tk.Entry(search_frame, width=30, font=FONT, bg=ENTRY_BG, fg=TEXT_COLOR, insertbackground=TEXT_COLOR, relief=tk.FLAT)
+search_entry.pack(side=tk.LEFT, padx=(0, 5))
+
+search_btn = tk.Button(search_frame, text="Search", command=search_tasks, bg=BTN_BG, fg=BTN_FG, font=FONT, bd=0, relief=tk.FLAT)
+search_btn.pack(side=tk.LEFT)
+
+#Clear search
+clear_btn = tk.Button(search_frame, text="Clear", command=clear_search, bg="#4b5563", fg="white", font=FONT, bd=0, relief=tk.FLAT)
+clear_btn.pack(side=tk.LEFT, padx=5)
+
 
 refresh_tasks()
 app.mainloop()
