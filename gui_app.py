@@ -168,7 +168,7 @@ styled_btn("Add", add_task).pack(side=tk.LEFT, padx=4)
 styled_btn("Delete", delete_selected).pack(side=tk.LEFT, padx=4)
 styled_btn("Edit", edit_selected).pack(side=tk.LEFT, padx=4)
 styled_btn("Check Off", toggle_status).pack(side=tk.LEFT, padx=4)
-styled_btn("Undo", undo_last).pack(side=tk.LEFT, padx=4)
+styled_btn("Undo Action", undo_last).pack(side=tk.LEFT, padx=4)
 
 # Task List
 task_listbox = tk.Listbox(
