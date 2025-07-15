@@ -15,6 +15,20 @@ LISTBOX_BG = "#2a2a36"
 TEXT_COLOR = "#f1f5f9"
 FONT = ("Segoe UI", 11)
 
+TAG_COLORS = {
+    'urgent': '#ff6b6b',
+    'work': '#f9c74f',
+    'personal': '#90be6d',
+    'School': '#4cc9f0',
+    'study': '#4cc9f0',
+    'family': "#ffffff",
+    'default': '#2dd4bf'
+}
+
+def get_tag_color(tag):
+    return TAG_COLORS.get(tag.lower(), TAG_COLORS['default'])
+
+
 
 def refresh_tasks():
     task_listbox.delete(0, tk.END)
@@ -25,11 +39,34 @@ def refresh_tasks():
 
     for i, task in enumerate(tasks, start=1):
         status_icon="✔️done" if task['status']== 'done' else "Pending"
-        display_text= f"{i}. {task['description']}" 
-        if status_icon:
-            display_text +=f" [{status_icon}]"
+        tags= task_db.get_tags(task['id'])
+        tag_display= f" | {', '.join(tags)}" if tags else ""
+        display_text= f"{i}. {task['description']} [{status_icon}]{tag_display}" 
         task_listbox.insert(tk.END, display_text)
-        task_id_map.append(task['id'])  
+        task_id_map.append(task['id'])
+
+
+def show_task_tags(event):
+
+    for widget in tag_display_frame.winfo_children():
+        widget.destroy()
+
+    try:
+        index = task_listbox.curselection()[0]
+        task_id = task_id_map[index]
+        tags= task_db.get_tags(task_id)
+
+        if tags:
+            for tag in tags:
+                color = get_tag_color(tag)
+                tag_label = tk.Label(tag_display_frame, text=tag, bg=color, fg= 'black',
+                                     font=("Segoe UI", 9, "bold"), padx=6, pady=2)
+                tag_label.pack(side=tk.LEFT, padx=3)
+        else:
+            empty_label = tk.Label(tag_display_frame, text= "No Tags", bg=BG_COLOR, fg="gray", font=("Segoe UI", 9, "italic"))
+            empty_label.pack()
+    except Exception as e:
+        print(e)
 
 def search_tasks():
     keyword = search_entry.get().strip().lower()
@@ -60,6 +97,18 @@ def add_task():
         undo.push({"action":"add","desc": desc})
         refresh_tasks()
         entry.delete(0,tk.END)
+
+#Added tags from Jolene's code
+def add_tag_selected():
+    try:
+        index = task_listbox.curselection()[0]
+        task_id = task_id_map[index]
+        tag= simpledialog.askstring("Add Tag", "Enter tag: ")
+        if tag:
+            task_db.add_tag(task_id, tag)
+            refresh_tasks()
+    except:
+        messagebox.showerror("Error","Select a task to add tag.")  
 
 def delete_selected():
     try:
@@ -119,7 +168,7 @@ def undo_last():
 # App Window Setup
 app = tk.Tk()
 app.title(" Darasa Todo")
-app.geometry("500x750")
+app.geometry("550x800")
 app.configure(bg=BG_COLOR)
 
 #Load and resize image
@@ -128,7 +177,7 @@ img_raw = img_raw.resize((80, 80))
 logo_img = ImageTk.PhotoImage(img_raw)
 
 
-# Load and show log
+# Load and show logo
 logo_label = tk.Label(app, image=logo_img, bg=BG_COLOR)
 logo_label.pack(pady=(15,5))
 
@@ -168,6 +217,7 @@ styled_btn("Add", add_task).pack(side=tk.LEFT, padx=4)
 styled_btn("Delete", delete_selected).pack(side=tk.LEFT, padx=4)
 styled_btn("Edit", edit_selected).pack(side=tk.LEFT, padx=4)
 styled_btn("Check Off", toggle_status).pack(side=tk.LEFT, padx=4)
+styled_btn("Add Tag", add_tag_selected).pack(side=tk.LEFT,padx=4)
 styled_btn("Undo Action", undo_last).pack(side=tk.LEFT, padx=4)
 
 # Task List
@@ -184,6 +234,9 @@ task_listbox = tk.Listbox(
 )
 
 task_listbox.pack(pady=10)
+task_listbox.bind("<<ListboxSelect>>", show_task_tags)
+tag_display_frame = tk.Frame(app, bg= BG_COLOR)
+tag_display_frame.pack(pady=(5,10))
 
 #Search
 search_frame = tk.Frame(app, bg=BG_COLOR)
