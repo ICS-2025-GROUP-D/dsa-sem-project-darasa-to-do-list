@@ -69,11 +69,13 @@ def undo():
                 break
 
     elif action["action"] == "delete":
-        task_db.add_task(action["dec"])
-        if action.get("status")== "done":
+        # Restore the deleted task with its original description
+        task_db.add_task(action["desc"])
+        # If the original status was 'done', toggle status after adding
+        if action.get("status") == "done":
             tasks = task_db.get_tasks()
             for t in tasks:
-                if t['description']== action["desc"]:
+                if t['description'] == action["desc"]:
                     task_db.toggle_status(t['id'])
                     break
 
