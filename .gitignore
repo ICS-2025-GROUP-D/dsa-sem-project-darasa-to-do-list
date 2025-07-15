@@ -1,0 +1,5 @@
+#Ignore db file
+darasa_todo.db
+
+__pyache__/
+*.pyc
